@@ -1,10 +1,8 @@
 from django.conf.urls import url
 from . import views
+from django.urls import path,re_path
 
 urlpatterns = [
-    #/music/
-    url(r'^$',views.index, name='index'),
-
-    #/music/23/
-    url(r'^(?P<Book_id>[0-9]+)/$',views.detail,name='detail'),
+    path('', views.index, name='index'),
+    path('<int:book_id>/', views.detail, name='detail'),
 ]

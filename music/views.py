@@ -1,11 +1,17 @@
-from django.http import HttpResponse
-from django.template import loader
+from django.http import Http404
+from django.shortcuts import render
 from .models import Book
+
 
 def index(request):
     all_books = Book.objects.all()
-    template = loader.get_template('')
-    return HttpResponse('')
+
+    return render(request,'music/index.html',{'all_books' : all_books})
+
 
 def detail(request, book_id):
-    return HttpResponse("<h2>details for book_id:" + str(book_id) + "</h2>")
+    try:
+        book = Book.objects.get(pk = book_id)
+    except Book.DoesNotExist:
+        raise Http404('Book does not exist')
+    return render(request, 'music/detail.html', {'book' : book})

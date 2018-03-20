@@ -1,0 +1,20 @@
+body{
+    background: white url("/static/music/images/subtle_white_feathers.png");
+}
+.navbar{
+border-radius: 0;
+}
+.navbar-brand{
+ font-family:'Satisfy',cursive;
+}
+body{
+    background-color: #525252;
+}
+.centered-form{
+	margin-top: 60px;
+}
+
+.centered-form .panel{
+	background: rgba(255, 255, 255, 0.8);
+	box-shadow: rgba(0, 0, 0, 0.3) 20px 20px 20px;
+}

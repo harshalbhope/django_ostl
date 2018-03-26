@@ -25,72 +25,215 @@ from .models import Book,Book_Format
 #  accepted
 # You can use triple-quoted strings. When they're not a docstring (first thing in a class/function/module), they are ignored.
 
-from django.views import generic
-from .models import Book
-from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
-from django.views.generic import View
-from .forms import UserForm
+from django.contrib.auth import logout
+from django.shortcuts import render, get_object_or_404
+from django.db.models import Q
+from .models import Book, Book_Format
+from .forms import BookForm, Book_FormatForm, UserForm
 
 
-class IndexView(generic.ListView):
-    template_name = 'music/index.html'
-    context_object_name = 'all_books'
-
-    def get_queryset(self):
-        return Book.objects.all()
+AUDIO_FILE_TYPES = ['wav', 'mp3', 'ogg']
+IMAGE_FILE_TYPES = ['png', 'jpg', 'jpeg']
 
 
-class DetailView(generic.DetailView):
-    model = Book
-    template_name = 'music/detail.html'
+def index(request):
+    if not request.user.is_authenticated():
+        return render(request, 'music/login.html')
+    else:
+        books = Book.objects.filter(user=request.user)
+        audio_results = Book_Format.objects.all()
+        query = request.GET.get("q")
+        if query:
+            books = books.filter(
+                Q(album_title__icontains=query) |
+                Q(artist__icontains=query)
+            ).distinct()
+            audio_results =audio_results.filter(
+                Q(song_title__icontains=query)
+            ).distinct()
+            return render(request, 'music/index.html', {
+                'book': books ,
+                'book_formats': audio_results,
+            })
+        else:
+            return render(request, 'music/index.html', {'book': books})
 
 
-class BookCreate(CreateView):
-    model = Book
-    fields = ['Author','Book_title','Typegenre','Book_logo']
+
+def detail(request, album_id):
+    if not request.user.is_authenticated():
+        return render(request, 'music/login.html')
+    else:
+        user = request.user
+        book = get_object_or_404(Book, pk=album_id)
+        return render(request, 'music/detail.html', {'book': book, 'user': user})
 
 
-class BookUpdate(UpdateView):
-    model = Book
-    fields = ['Author','Book_title','Typegenre','Book_logo']
-
-
-class BookDelete(DeleteView):
-    model = Book
-    success_url = reverse_lazy('music:index')
-
-
-class UserFormView(View):
-    form_class = UserForm
-    template_name = 'music/registration_form.html'
-
-    #display form data
-    def get(self,request):
-        form = self.form_class(None)
-        return render(request,self.template_name,{'form':form})
-
-    #process form data
-    def post(self,request):
-        form = self.form_class(request.POST)
-
+def create_book(request):
+    if not request.user.is_authenticated():
+        return render(request, 'music/login.html')
+    else:
+        form = BookForm(request.POST or None, request.FILES or None)
         if form.is_valid():
-            user = form.save(commit=False)
+            book = form.save(commit=False)
+            book.user = request.user
+            book.Book_logo = request.FILES['album_logo']
+            file_type = book.Book_logo.url.split('.')[-1]
+            file_type = file_type.lower()
+            if file_type not in IMAGE_FILE_TYPES:
+                context = {
+                    'book': book,
+                    'form': form,
+                    'error_message': 'Image file must be PNG, JPG, or JPEG',
+                }
+                return render(request, 'music/create_book.html', context)
+                book.save()
+            return render(request, 'music/detail.html', {'book': book})
+        context = {
+            "form": form,
+        }
+        return render(request, 'music/create_book.html', context)
 
-            #cleaned data
-            username = form.cleaned_data['username']
-            password = form.cleaned_data['password']
-            user.set_password(password)
-            user.save()
 
-            #returns User objects id cewdwntials are correct
-            user = authenticate(username=username,password=password)
+def delete_book(request, book_id):
+    book = Book.objects.get(pk=book_id)
+    book.delete()
+    books = Book.objects.filter(user=request.user)
+    return render(request, 'music/index.html', {'books': books})
 
-            if user is not None:
-                if user.is_active:
-                    login(request,user)
-                    return redirect('music:index')
+def favorite_book(request, book_id):
+    book = get_object_or_404(Book, pk=book_id)
+    try:
+        if book.is_favorite:
+            book.is_favorite = False
+        else:
+            book.is_favorite = True
+            book.save()
+    except (KeyError, Book.DoesNotExist):
+        return JsonResponse({'success': False})
+    else:
+        return JsonResponse({'success': True})
 
-        return render(request, self.template_name, {'form': form})
+
+
+def login_user(request):
+    if request.method == "POST":
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            if user.is_active:
+                login(request, user)
+                books = Book.objects.filter(user=request.user)
+                return render(request, 'music/index.html', {'book': books})
+            else:
+                return render(request, 'music/login.html', {'error_message': 'Your account has been disabled'})
+        else:
+            return render(request, 'music/login.html', {'error_message': 'Invalid login'})
+    return render(request, 'music/login.html')
+
+def logout_user(request):
+    logout(request)
+    form = UserForm(request.POST or None)
+    context = {
+         "form": form,
+    }
+    return render(request, 'music/login.html', context)
+
+
+def register(request):
+    form = UserForm(request.POST or None)
+    if form.is_valid():
+        user = form.save(commit=False)
+        username = form.cleaned_data['username']
+        password = form.cleaned_data['password']
+        user.set_password(password)
+        user.save()
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            if user.is_active:
+                login(request, user)
+                books = Book.objects.filter(user=request.user)
+                return render(request, 'music/index.html', {'Book': books})
+    context = {
+        "form": form,
+    }
+    return render(request, 'music/register.html', context)
+
+def delete_audio(request, book_id, audio_id):
+
+     book = get_object_or_404(Book, pk=book_id)
+     audio = Book_Format.objects.get(pk=audio_id)
+     audio.delete()
+     return render(request, 'music/detail.html', {'Book': book})
+
+def create_audio(request, book_id):
+    form = BookForm(request.POST or None, request.FILES or None)
+    book = get_object_or_404(Book, pk=book_id)
+    if form.is_valid():
+        books_audio = book.song_set.all()
+        for s in books_audio:
+            if s.song_title == form.cleaned_data.get("song_title"):
+                context = {
+                    'book': book,
+                    'form': form,
+                    'error_message': 'You already added that song',
+                }
+                return render(request, 'music/create_song.html', context)
+        song = form.save(commit=False)
+        song.book = book
+        song.audio_file = request.FILES['audio_file']
+        file_type = song.audio_file.url.split('.')[-1]
+        file_type = file_type.lower()
+        if file_type not in AUDIO_FILE_TYPES:
+            context = {
+                'book': book,
+                'form': form,
+                'error_message': 'Audio file must be WAV, MP3, or OGG',
+            }
+            return render(request, 'music/create_song.html', context)
+
+        song.save()
+        return render(request, 'music/detail.html', {'book': book})
+    context = {
+        'book': book,
+        'form': form,
+    }
+    return render(request, 'music/create_song.html', context)
+
+def favorite(request, audio_id):
+    audio = get_object_or_404(Book_Format, pk=audio_id)
+    try:
+        if audio.is_favorite:
+            audio.is_favorite = False
+        else:
+            audio.is_favorite = True
+        audio.save()
+    except (KeyError, Book_Format.DoesNotExist):
+        return JsonResponse({'success': False})
+    else:
+        return JsonResponse({'success': True})
+
+def audios(request, filter_by):
+    if not request.user.is_authenticated():
+        return render(request, 'music/login.html')
+    else:
+        try:
+            audio_ids = []
+            for book in Book.objects.filter(user=request.user):
+                for song in book.song_set.all():
+                    audio_ids.append(song.pk)
+            users_songs = Book_Format.objects.filter(pk__in=audio_ids)
+            if filter_by == 'favorites':
+                users_songs = users_songs.filter(is_favorite=True)
+        except Book.DoesNotExist:
+            users_songs = []
+        return render(request, 'music/songs.html', {
+            'song_list': users_songs,
+            'filter_by': filter_by,
+        })

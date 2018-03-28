@@ -1,12 +1,7 @@
 body{
     background: white url("/static/music/images/subtle_white_feathers.png");
 }
-.navbar{
-border-radius: 0;
-}
-.navbar-brand{
- font-family:'Satisfy',cursive;
-}
+
 body{
     background-color: #525252;
 }
@@ -17,4 +12,28 @@ body{
 .centered-form .panel{
 	background: rgba(255, 255, 255, 0.8);
 	box-shadow: rgba(0, 0, 0, 0.3) 20px 20px 20px;
+}
+ul.errorlist {
+    padding-left: 0;
+}
+
+ul.errorlist > li {
+    list-style: none;
+}
+
+.navbar {
+    border-radius: 0;
+}
+
+.navbar-brand {
+    font-family: 'Satisfy', cursive;
+}
+
+.glyphicon-star {
+    color: #CCCCCC;
+    font-size: 16px;
+}
+
+.glyphicon-star.active {
+    color: #FDB230;
 }

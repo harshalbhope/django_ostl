@@ -1,5 +1,5 @@
 from music import views
-from django.urls import path
+from django.urls import path,re_path
 app_name = 'music'
 
 urlpatterns = [
@@ -18,7 +18,8 @@ urlpatterns = [
     path('<int:audio_id>/favorite/', views.favorite, name='favorite'),
 
 
-    # path('songs/<char:filter_by>/', views.audios, name='audios'),
+    #path('songs/<<slug:filter_by>/', views.audios, name='audios'),
+    re_path(r'^songs/(?P<filter_by>[a-zA_Z]+)/$', views.audios, name='audios'),
     path('<int:book_id>/create_audio/', views.create_audio, name='create_audio'),
     path('<int:book_id>/delete_audio/<int:audio_id>', views.delete_audio, name='delete_audio'),
 

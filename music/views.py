@@ -25,7 +25,7 @@ from .models import Book,Book_Format
 #  accepted
 # You can use triple-quoted strings. When they're not a docstring (first thing in a class/function/module), they are ignored.
 
-from django.urls import reverse_lazy
+
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.contrib.auth.models import User
@@ -42,7 +42,7 @@ IMAGE_FILE_TYPES = ['png', 'jpg', 'jpeg']
 
 
 def index(request):
-    if not request.user.is_authenticated():
+    if not request.user.is_authenticated:
         return render(request, 'music/login.html')
     else:
         books = Book.objects.filter(user=request.user)
@@ -66,7 +66,7 @@ def index(request):
 
 
 def detail(request, album_id):
-    if not request.user.is_authenticated():
+    if not request.user.is_authenticate:
         return render(request, 'music/login.html')
     else:
         user = request.user
@@ -75,14 +75,14 @@ def detail(request, album_id):
 
 
 def create_book(request):
-    if not request.user.is_authenticated():
+    if not request.user.is_authenticated:
         return render(request, 'music/login.html')
     else:
         form = BookForm(request.POST or None, request.FILES or None)
         if form.is_valid():
             book = form.save(commit=False)
             book.user = request.user
-            book.Book_logo = request.FILES['album_logo']
+            book.Book_logo = request.FILES['Book_logo']
             file_type = book.Book_logo.url.split('.')[-1]
             file_type = file_type.lower()
             if file_type not in IMAGE_FILE_TYPES:
@@ -92,7 +92,7 @@ def create_book(request):
                     'error_message': 'Image file must be PNG, JPG, or JPEG',
                 }
                 return render(request, 'music/create_book.html', context)
-                book.save()
+            book.save()
             return render(request, 'music/detail.html', {'book': book})
         context = {
             "form": form,
@@ -176,7 +176,7 @@ def create_audio(request, book_id):
     form = BookForm(request.POST or None, request.FILES or None)
     book = get_object_or_404(Book, pk=book_id)
     if form.is_valid():
-        books_audio = book.song_set.all()
+        books_audio = book.book_format_set.all()
         for s in books_audio:
             if s.song_title == form.cleaned_data.get("song_title"):
                 context = {
@@ -220,7 +220,7 @@ def favorite(request, audio_id):
         return JsonResponse({'success': True})
 
 def audios(request, filter_by):
-    if not request.user.is_authenticated():
+    if not request.user.is_authenticated:
         return render(request, 'music/login.html')
     else:
         try:

@@ -12,8 +12,8 @@
             <div class="panel panel-default">
                 <div class="panel-body">
                         <a href="{% url 'music:detail' book.id %}">
-                            {% if book.book_logo %}
-                                <img src="{{ book.book_logo.url }}" class="img-responsive">
+                            {% if book.Book_logo %}
+                                <img src="{{ book.Book_logo.url }}" class="img-responsive">
                             {% else %}
                                 <h3>No image to display</h3>
                             {% endif %}
@@ -41,7 +41,7 @@
                     <form class="form-horizontal" role="form" action="" method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         <input type="hidden" name="book" value="{{ book }}">
-                        {% include 'music/form_template.html' %}
+                        {% include 'music/form-template.html' %}
                         <div class="form-group">
                             <div class="col-sm-offset-2 col-sm-10">
                                 <button type="submit" class="btn btn-success">Submit</button>

@@ -29,13 +29,13 @@
 
             <ul class="nav nav-pills" style="margin-bottom: 10px;">
                 <li role="presentation" class="active"><a href="{% url 'music:detail' book.id %}">View All</a></li>
-                <li role="presentation"><a href="{% url 'music:create_book' book.id %}">Add New books</a></li>
+                <li role="presentation"><a href="{% url 'music:create_audio' book.id %}">Add New songs</a></li>
             </ul>
 
             <div class="panel panel-default">
                 <div class="panel-body">
 
-                    <h3>All Books</h3>
+                    <h3>All Audios</h3>
 
                     {% if error_message %}
                         <p><strong>{{ error_message }}</strong></p>
@@ -53,20 +53,21 @@
                         <tbody>
                         {% for song in book.book_format_set.all %}
                             <tr>
-                                <td>{{ song.Book_year }}</td>
+                                <td>{{ song.Audio_title }}</td>
                                 <td>
-                                    <a  href="{{ song.audio_file.url }}">
+                                    <a  href="{{ song.Audio.url }}">
                                         <button type="button" class="btn btn-success btn-xs">
                                             <span class="glyphicon glyphicon-play"></span>&nbsp; Play
                                         </button>
                                     </a>
                                 </td>
                                 <td>
-                                    <a href="{% url 'music:favorite' audio.id %}" class="btn-favorite"><span class="glyphicon glyphicon-star {% if song.is_favorite %}active{% endif %}"></span></a>
+                                    <a href="#" class="btn-favorite"><span class="glyphicon glyphicon-star {% if song.is_favorite %}active{% endif %}"></span></a>
                                 </td>
                                 <td>
-                                    <form action="{% url 'music:delete_song' album.id audio.id %}" method="post" style="display: inline;">
+                                    <form action="#" method="post" style="display: inline;">
                                         {% csrf_token %}
+
                                         <input type="hidden" name="book_id" value="{{ book.id }}" />
                                         <button type="submit" class="btn btn-danger btn-xs">
                                             <span class="glyphicon glyphicon-remove"></span>&nbsp; Delete

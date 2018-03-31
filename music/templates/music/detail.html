@@ -29,7 +29,7 @@
 
             <ul class="nav nav-pills" style="margin-bottom: 10px;">
                 <li role="presentation" class="active"><a href="{% url 'music:detail' book.id %}">View All</a></li>
-                <li role="presentation"><a href="{% url 'music:create_audio' book.id %}">Add New songs</a></li>
+                <li role="presentation"><a href="{% url 'music:create_audio' book.id  %}">Add New songs</a></li>
             </ul>
 
             <div class="panel panel-default">
@@ -62,10 +62,10 @@
                                     </a>
                                 </td>
                                 <td>
-                                    <a href="#" class="btn-favorite"><span class="glyphicon glyphicon-star {% if song.is_favorite %}active{% endif %}"></span></a>
+                                    <a href="{% url 'music:favorite' song.id %}" class="btn-favorite"><span class="glyphicon glyphicon-star {% if song.is_favorite %}active{% endif %}"></span></a>
                                 </td>
                                 <td>
-                                    <form action="#" method="post" style="display: inline;">
+                                    <form action="{% url 'music:delete_audio' book.id song.id %}" method="post" style="display: inline;">
                                         {% csrf_token %}
 
                                         <input type="hidden" name="book_id" value="{{ book.id }}" />

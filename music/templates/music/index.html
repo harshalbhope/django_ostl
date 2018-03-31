@@ -57,7 +57,7 @@
     </div>
 
     <!-- If user searches and there are songs -->
-    {% if songs %}
+    {% if book_formats %}
         <div class="row">
             <div class="col-sm-12">
                 <h3>Songs</h3>
@@ -78,10 +78,10 @@
                             <tbody>
                                 {% for song in book_formats %}
                                     <tr>
-                                        <td>{{ song.Book_year }}</td>
-                                        <td>{{ song.Publisher }}</td>
+                                        <td>{{ song.Audio_title }}</td>
+                                        <td>{{ song.book.Author}}</td>
                                         <td>
-                                            <a target="_blank" href="{{ song.audio_file.url }}">
+                                            <a target="_blank" href="{{ song.Audio.url }}">
                                                 <button type="button" class="btn btn-success btn-xs">
                                                     <span class="glyphicon glyphicon-play"></span>&nbsp; Play
                                                 </button>
@@ -89,12 +89,12 @@
                                         </td>
                                         <td>
                                             <a href="{% url 'music:detail' song.book.id %}">
-                                                <img src="{{ song.book.book_logo }}" class="img-responsive" style="width: 20px; float: left; margin-right: 10px;" />
+                                                <img src="{{ song.book.Book_logo }}" class="img-responsive" style="width: 20px; float: left; margin-right: 10px;" />
                                             </a>
-                                            <a href="{% url 'music:detail' song.book.id %}">{{ song.book.book_title }}</a>
+                                            <a href="{% url 'music:detail' song.book.id %}">{{ song.book.Book_title }}</a>
                                         </td>
                                         <td>
-                                            <a href="{% url 'music:favorite' book.id %}" class="btn-favorite"><span class="glyphicon glyphicon-star {% if song.is_favorite %}active{% endif %}"></span></a>
+                                            <a href="{% url 'music:favorite' song.book.id %}" class="btn-favorite"><span class="glyphicon glyphicon-star {% if song.is_favorite %}active{% endif %}"></span></a>
                                         </td>
                                     </tr>
                                 {% endfor %}

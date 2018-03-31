@@ -54,7 +54,7 @@ def index(request):
                 Q(Author__icontains=query)
             ).distinct()
             audio_results = audio_results.filter(
-                Q(AUDIO_FILE__icontains=query)
+                Q(Audio_title__icontains=query)
             ).distinct()
             return render(request, 'music/index.html', {
                 'books': books ,
@@ -62,6 +62,23 @@ def index(request):
             })
         else:
             return render(request, 'music/index.html', {'books': books})
+
+def audios(request, filter_by):
+    if not request.user.is_authenticated:
+        return render(request, 'music/login.html')
+    else:
+        try:
+            audio_ids = []
+            for book in Book.objects.filter(user=request.user):
+                for song in book.book_format_set.all():
+                    audio_ids.append(song.pk)
+            users_songs = Book_Format.objects.filter(pk__in=audio_ids)
+        except Book.DoesNotExist:
+            users_songs = []
+        return render(request, 'music/songs.html', {
+            'audio_list': users_songs,
+            'filter_by': filter_by,
+        })
 
 
 
@@ -146,13 +163,25 @@ def favorite_book(request, book_id):
             book.is_favorite = False
         else:
             book.is_favorite = True
-            book.save()
+        book.save()
     except (KeyError, Book.DoesNotExist):
         return JsonResponse({'success': False})
     else:
         return JsonResponse({'success': True})
 
+def favorite(request, audio_id):
+    audio = get_object_or_404(Book_Format, pk=audio_id)
 
+    try:
+        if audio.is_favorite:
+            audio.is_favorite = False
+        else:
+            audio.is_favorite = True
+        audio.save()
+    except (KeyError, Book_Format.DoesNotExist):
+        return JsonResponse({'success': False})
+    else:
+        return JsonResponse({'success': True})
 
 def login_user(request):
     if request.method == "POST":
@@ -203,38 +232,9 @@ def delete_audio(request, book_id, audio_id):
      book = get_object_or_404(Book, pk=book_id)
      audio = Book_Format.objects.get(pk=audio_id)
      audio.delete()
-     return render(request, 'music/detail.html', {'Book': book})
+     return render(request, 'music/detail.html', {'book': book})
 
 
 
-def favorite(request, audio_id):
-    audio = get_object_or_404(Book_Format, pk=audio_id)
-    try:
-        if audio.is_favorite:
-            audio.is_favorite = False
-        else:
-            audio.is_favorite = True
-        audio.save()
-    except (KeyError, Book_Format.DoesNotExist):
-        return JsonResponse({'success': False})
-    else:
-        return JsonResponse({'success': True})
 
-def audios(request, filter_by):
-    if not request.user.is_authenticated:
-        return render(request, 'music/login.html')
-    else:
-        try:
-            audio_ids = []
-            for book in Book.objects.filter(user=request.user):
-                for song in book.book_format_set.all():
-                    audio_ids.append(song.pk)
-            users_songs = Book_Format.objects.filter(pk__in=audio_ids)
-            if filter_by == 'favorites':
-                users_songs = users_songs.filter(is_favorite=True)
-        except Book.DoesNotExist:
-            users_songs = []
-        return render(request, 'music/songs.html', {
-            'audio_list': users_songs,
-            'filter_by': filter_by,
-        })
+

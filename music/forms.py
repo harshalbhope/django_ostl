@@ -13,7 +13,7 @@ class Book_FormatForm(forms.ModelForm):
 
     class Meta:
         model = Book_Format
-        fields = ['Book_year', 'Publisher']
+        fields = ['Audio_title', 'Audio']
 
 class UserForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)

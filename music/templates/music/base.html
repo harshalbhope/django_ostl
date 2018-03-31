@@ -37,8 +37,8 @@
                     </a>
                 </li>
                 <li class="{% block audios_active %}{% endblock %}">
-                    <a href="#">
-                        <span class="glyphicon glyphicon-book" aria-hidden="true"></span>&nbsp;Books
+                    <a href="{% url 'music:audios' 'all' %}">
+                        <span class="glyphicon glyphicon-book" aria-hidden="true"></span>&nbsp;songs
                     </a>
                 </li>
             </ul>

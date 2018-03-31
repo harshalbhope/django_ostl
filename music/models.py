@@ -13,15 +13,15 @@ class Book(models.Model):
 
 
     def __str__(self):
-        return self.Author + '-' + self.Book_title
+        return self.Book_title + '-' + self.Author
 
 
 # Create your models here.
 class Book_Format(models.Model):
     book = models.ForeignKey(Book,on_delete = models.CASCADE,)
-    Book_year = models.CharField(max_length=100)
-    Publisher = models.FileField(default='')
+    Audio_title = models.CharField(max_length=100)
+    Audio = models.FileField(default='')
     is_favorite = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.Publisher
+        return self.Audio_title

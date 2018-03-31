@@ -1,7 +1,7 @@
 
 var AlbumsListPage = {
 	init: function() {
-		this.$container = $('.albums-container');
+		this.$container = $('.books-container');
 		this.render();
 		this.bindEvents();
 	},
